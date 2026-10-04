@@ -3,7 +3,8 @@ import sys
 import time
 import uuid
 from pathlib import Path
-
+GROUNDED_THRESHOLD = 0.42
+HYBRID_THRESHOLD = 0.32
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -105,6 +106,7 @@ def query(request: QueryRequest):
 
     prompt = build_prompt(question, top_chunks, history)
     
+
     try:
         answer=ask_llm(prompt)
 
@@ -118,3 +120,12 @@ def query(request: QueryRequest):
     print(f"[query] '{question[:50]}...' -> {elapsed}s, {len(top_chunks)} chunks")
 
     return QueryResponse(answer=answer, retrieved_chunks=top_chunks,session_id=session_id)
+def decide_mode(chunks: list[dict]) -> str:
+    if not chunks:
+        return "general"
+    best_score = max(c["similarity_score"] for c in chunks)
+    if best_score >= GROUNDED_THRESHOLD:
+        return "grounded"
+    elif best_score >= HYBRID_THRESHOLD:
+        return "hybrid"
+    return "general"
