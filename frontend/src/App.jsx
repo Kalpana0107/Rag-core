@@ -33,6 +33,8 @@ function App() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
+
 
   const handleSearch = async () => {
     if (!question.trim()) {
@@ -54,11 +56,14 @@ function App() {
       } else {
         const response = await axios.post(`${BACKEND_URL}/query`, {
           question: question,
+          session_id: sessionId,
         });
         data = response.data;
       }
 
       setResult(data);
+      setSessionId(data.session_id);
+
       setChatHistory((prev) => [...prev, { question, answer: data.answer }]);
     } catch (err) {
       if (err.code === 'ERR_NETWORK') {
