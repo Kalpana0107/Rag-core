@@ -16,6 +16,7 @@ def ask_llm(prompt: str , temperature: float =0.2, max_tokens: int = 500) -> str
             temperature = temperature,
             max_tokens = max_tokens,
 
+
         )
         return response.choices[0].message.content
 
