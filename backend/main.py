@@ -104,7 +104,7 @@ def query(request: QueryRequest):
         )
 
     prompt = build_prompt(question, top_chunks, history)
-    
+
     try:
         answer=ask_llm(prompt)
 
