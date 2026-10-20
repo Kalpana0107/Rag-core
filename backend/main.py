@@ -78,14 +78,14 @@ Answer:"""
 
 @app.get("/")
 def health_check():
-    return{"status": "ok", "message": "rage-core backend is running"}
+    return{"status": "ok", "message": "rag-core backend is running"}
 
 @app.post("/query",response_model=QueryResponse)
 def query(request: QueryRequest):
     question = request.question.strip()
 
     if not question:
-        raise HTTPException(status_code=400, detail="queation cannot be empty")
+        raise HTTPException(status_code=400, detail="question cannot be empty")
 
     session_id =request.session_id or str(uuid.uuid4())
 

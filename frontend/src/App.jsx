@@ -82,6 +82,16 @@ function App() {
     }
   };
 
+  const handleNewConversation = () => {
+    setSessionId(null);
+    setChatHistory([]);
+    setResult(null);
+    setError(null);
+    setQuestion('');
+
+
+  };
+
   return (
     <div className="app">
       <h1>{APP_TITLE}</h1>
@@ -97,6 +107,10 @@ function App() {
         />
         <button onClick={handleSearch} disabled={loading}>
           {loading ? 'Searching...' : 'Search'}
+        </button>
+
+        <button onClick={handleNewConversation} disabled={loading}>
+          New Conversation
         </button>
       </div>
 
