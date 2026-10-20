@@ -3,7 +3,7 @@
   margin: 40px auto;
   padding: 0 20px;
   font-family: system-ui, -apple-system, sans-serif;
-  color: #1a1a1a;
+  color: var(--text-h);
 }
 
 h1 {
@@ -12,7 +12,7 @@ h1 {
 }
 
 .subtitle {
-  color: #555;
+  color: var(--text);
   margin-top: 0;
   margin-bottom: 24px;
 }
@@ -68,6 +68,7 @@ h1 {
 
 .answer {
   background: #f5f7fa;
+  color: #1a1a1a;
   padding: 14px 16px;
   border-radius: 6px;
   line-height: 1.5;

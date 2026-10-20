@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 import { BACKEND_URL, APP_TITLE, PLACEHOLDER_QUESTION } from './config';
 import './App.css';
@@ -11,6 +12,10 @@ const USE_FAKE_DATA = false;
 const FAKE_RESPONSE = {
   answer:
     'Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without explicit programming.',
+  answer_mode: 'hybrid',
+  citations: [
+    { chunk_id: 'doc1_chunk0', claim: 'ML trains algorithms on data' },
+  ],
   retrieved_chunks: [
     {
       chunk_id: 'doc1_chunk0',
@@ -26,6 +31,29 @@ const FAKE_RESPONSE = {
     },
   ],
 };
+const MODE_CONFIG = {
+  grounded: { label: 'From your documents', color: '#16a34a' },
+  hybrid: { label: 'Mixed: documents + general knowledge', color: '#ca8a04' },
+  general: { label: 'General knowledge, not from your documents', color: '#dc2626' },
+};
+
+function ModeBadge({ mode }) {
+  const config = MODE_CONFIG[mode] || MODE_CONFIG.general;
+  return (
+    <span
+      style={{
+        background: config.color,
+        color: 'white',
+        padding: '2px 8px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        marginLeft: '8px',
+      }}
+    >
+      {config.label}
+    </span>
+  );
+}
 
 function App() {
   const [question, setQuestion] = useState('');
@@ -33,7 +61,15 @@ function App() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+const chunkRefs = useRef({});
 
+const scrollToChunk = (chunkId) => {
+  const el = chunkRefs.current[chunkId];
+  if (el) {
+    el.open = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
   const handleSearch = async () => {
     if (!question.trim()) {
       setError('Please enter a question!');
@@ -52,11 +88,8 @@ function App() {
         await new Promise((resolve) => setTimeout(resolve, 500));
         data = FAKE_RESPONSE;
       } else {
-        const response = await axios.post(`${BACKEND_URL}/query`, {
-          question: question,
-        });
-        data = response.data;
-      }
+      setError(err.response?.data?.detail || `Error: ${err.message}`);
+}
 
       setResult(data);
       setChatHistory((prev) => [...prev, { question, answer: data.answer }]);
@@ -70,13 +103,17 @@ function App() {
       setLoading(false);
     }
   };
-
+  
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
-
+<details
+  key={chunk.chunk_id ?? i}
+  ref={(el) => (chunkRefs.current[chunk.chunk_id] = el)}
+  className="chunk"
+></details>
   return (
     <div className="app">
       <h1>{APP_TITLE}</h1>
@@ -99,9 +136,20 @@ function App() {
 
       {result && !error && (
         <div className="results">
-          <h2>Answer</h2>
+          <h2>
+              Answer
+              {result.answer_mode && <ModeBadge mode={result.answer_mode} />}
+          </h2>
           <p className="answer">{result.answer}</p>
-
+          {result.citations?.length > 0 && (
+  <div className="citations">
+    {result.citations.map((c, i) => (
+      <button key={i} onClick={() => scrollToChunk(c.chunk_id)} style={{ marginRight: '6px' }}>
+        [{c.chunk_id}]
+      </button>
+    ))}
+  </div>
+)}
           <h2>📄 Retrieved Documents</h2>
           {result.retrieved_chunks?.map((chunk, i) => (
             <details key={chunk.chunk_id ?? i} className="chunk">
